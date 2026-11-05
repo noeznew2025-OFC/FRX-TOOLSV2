@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: unzip -q GrafikMcByFaruq.zip
+      - run: unzip -q FRX-TOOLS-crosshair-source.zip
       - run: sed -i 's/useAndroidX=false/useAndroidX=true/' FRX-TOOLS-crosshair-source/gradle.properties
       - uses: actions/setup-java@v4
         with:
