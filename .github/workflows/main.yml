@@ -1,19 +1,44 @@
-- name: Build APK
-        shell: bash
+name: Build FRX TOOLS APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Extract Source ZIP
         run: |
-          echo "=== DAFTAR FILE REPOSITORY ==="
-          ls -la
+          unzip -o FRX-TOOLS-SOURCE-TANPA-WORKFLOW.zip -d extracted
 
-          SETTINGS=$(find . -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) | head -n 1)
-
-          if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle tidak ditemukan."
-            echo "Periksa apakah source project sudah di-upload."
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$SETTINGS")
-          echo "Project ditemukan: $PROJECT_DIR"
-
-          cd "$PROJECT_DIR"
+      - name: Build APK
+        run: |
+          cd extracted/GrafikMcByFaruq
           gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FRX-TOOLS-APK
+          path: extracted/GrafikMcByFaruq/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
