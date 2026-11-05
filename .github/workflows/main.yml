@@ -1,38 +1,19 @@
-name: Build FRX TOOLS APK
+- name: Build APK
+        shell: bash
+        run: |
+          echo "=== DAFTAR FILE REPOSITORY ==="
+          ls -la
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
+          SETTINGS=$(find . -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) | head -n 1)
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: settings.gradle tidak ditemukan."
+            echo "Periksa apakah source project sudah di-upload."
+            exit 1
+          fi
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "Project ditemukan: $PROJECT_DIR"
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
-
-      - name: Build APK
-        run: gradle assembleDebug --no-daemon
-        working-directory: GrafikMcByFaruq
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FRX-TOOLS-APK
-          path: GrafikMcByFaruq/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          cd "$PROJECT_DIR"
+          gradle assembleDebug --no-daemon
