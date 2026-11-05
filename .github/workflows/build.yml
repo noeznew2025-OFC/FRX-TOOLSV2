@@ -1,0 +1,45 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip Source Code
+        run: unzip -q FRX-TOOLS-source.zip
+
+      - name: Cek Struktur Folder (Debug)
+        run: ls -la
+
+      # Memperbaiki path untuk gradle.properties
+      - name: Ubah useAndroidX
+        run: |
+          if [ -f FRX-TOOLS/GrafikMcByFaruq/gradle.properties ]; then
+            sed -i 's/useAndroidX=false/useAndroidX=true/' FRX-TOOLS/GrafikMcByFaruq/gradle.properties
+            echo "Berhasil mengubah useAndroidX."
+          else
+            echo "Peringatan: gradle.properties tidak ditemukan di FRX-TOOLS/GrafikMcByFaruq/"
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Build APK
+        run: gradle assembleDebug --no-daemon
+        working-directory: FRX-TOOLS/GrafikMcByFaruq
+
+      # Memperbaiki path untuk mengambil file APK hasil build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FRX-TOOLS-APK
+          path: FRX-TOOLS/GrafikMcByFaruq/app/build/outputs/apk/debug/app-debug.apk
